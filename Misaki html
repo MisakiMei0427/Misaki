@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>三角洲行动 · 改枪码便签 | 公告版</title>
+    <style>
+        :root {
+            --bg: #f4f6f9; --card-bg: #ffffff; --text: #1e293b; --text-secondary: #64748b;
+            --border: #e2e8f0; --accent: #1e3a5f; --accent-light: #eef2f6; --input-bg: #f8fafc;
+            --hover-bg: #f1f5f9; --tag-bg: #e0e7ff; --tag-text: #3730a3; --shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .dark-mode {
+            --bg: #0f172a; --card-bg: #1e293b; --text: #f1f5f9; --text-secondary: #94a3b8;
+            --border: #334155; --accent: #3b82f6; --accent-light: #1e293b; --input-bg: #1e293b;
+            --hover-bg: #334155; --tag-bg: #312e81; --tag-text: #c7d2fe;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif; color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 16px; transition: 0.3s; }
+        .container { max-width: 1200px; width: 100%; display: flex; flex-direction: column; gap: 16px; }
+        .top-bar { background: var(--card-bg); border-radius: 12px; padding: 14px 18px; box-shadow: var(--shadow); display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px solid var(--border); }
+        .user-area { display: flex; align-items: center; gap: 10px; flex: 1; flex-wrap: wrap; }
+        .user-nickname { font-weight: 700; font-size: 18px; color: var(--accent); cursor: default; }
+        .user-id-bubble { font-size: 12px; background: var(--accent-light); padding: 4px 10px; border-radius: 16px; color: var(--text); cursor: pointer; user-select: none; display: flex; align-items: center; gap: 4px; }
+        .user-id-bubble:hover { background: var(--hover-bg); }
+        .mode-badge { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: #dbeafe; color: #1e40af; font-weight: 600; }
+        .mode-badge.visitor { background: #fef3c7; color: #92400e; }
+        .mode-badge.owner { background: #dc2626; color: white; }
+        .login-box { display: flex; gap: 6px; align-items: center; }
+        .login-box input { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; width: 120px; font-size: 13px; background: var(--input-bg); color: var(--text); }
+        .btn { padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 12px; background: var(--accent-light); color: var(--text); transition: 0.2s; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; border: 1px solid var(--border); }
+        .btn-primary { background: var(--accent); color: white; border: none; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn:hover { background: var(--hover-bg); }
+        .btn-sm { padding: 4px 10px; font-size: 10px; }
+        .btn-danger { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+        .btn-danger:hover { background: #fecaca; }
+        .search-area { display: flex; gap: 6px; align-items: center; }
+        .search-area input { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; width: 160px; background: var(--input-bg); color: var(--text); }
+        .main-grid { display: flex; gap: 16px; align-items: flex-start; }
+        .weapon-panel { flex: 2; min-width: 0; }
+        .side-panel { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 16px; }
+        .section-card { background: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); }
+        .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .card-header h3 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .card-body { padding: 10px 16px 16px; }
+        .tab-row { display: flex; gap: 4px; margin-bottom: 12px; }
+        .tab-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); cursor: pointer; font-size: 11px; font-weight: 600; color: var(--text); }
+        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .category-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; cursor: pointer; user-select: none; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+        .category-header h4 { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .category-header .arrow { transition: transform 0.2s; font-size: 12px; }
+        .category-content.collapsed { display: none; }
+        .weapon-block { margin-bottom: 12px; padding: 10px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); }
+        .weapon-check { margin-right: 8px; }
+        .weapon-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .weapon-name { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .weapon-icon { font-size: 18px; }
+        .weapon-name small { font-weight: 400; font-size: 10px; color: var(--text-secondary); display: block; }
+        .code-list { display: flex; flex-direction: column; gap: 8px; }
+        .code-row { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+        .code-input { flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-family: monospace; background: var(--input-bg); color: var(--text); min-width: 150px; }
+        .code-input:focus { border-color: var(--accent); outline: none; }
+        .copy-btn { background: var(--card-bg); border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; color: var(--text); }
+        .copy-btn:hover { background: var(--hover-bg); }
+        .share-btn { background: #dbeafe; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; color: #1e40af; }
+        .share-btn:hover { background: #bfdbfe; }
+        .like-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 4px; }
+        .delete-code-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 2px 6px; }
+        .delete-code-btn:hover { color: #ef4444; }
+        .add-code-btn { background: none; border: 1px dashed var(--border); color: var(--text-secondary); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; margin-top: 4px; display: inline-block; }
+        .add-code-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .tag-input { width: 100px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 10px; background: var(--input-bg); color: var(--text); }
+        .tag { background: var(--tag-bg); color: var(--tag-text); padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-right: 2px; }
+        .value-input { width: 70px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 10px; background: var(--input-bg); color: var(--text); }
+        .comment-area { margin-top: 4px; width: 100%; }
+        .comment-input { width: 100%; padding: 4px; border: 1px solid var(--border); border-radius: 4px; font-size: 11px; background: var(--input-bg); color: var(--text); margin-top: 2px; }
+        .comment-item { font-size: 10px; padding: 2px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+        .comment-item .meta { color: var(--text-secondary); }
+        .history-select { font-size: 10px; padding: 2px 4px; border: 1px solid var(--border); border-radius: 4px; background: var(--input-bg); color: var(--text); }
+        .rank-list { background: var(--bg); border-radius: 8px; padding: 10px; }
+        .rank-item { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; }
+        .rank-item .name { font-weight: 600; }
+        .message-area { background: var(--bg); border-radius: 8px; padding: 12px; max-height: 250px; overflow-y: auto; }
+        .msg-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 12px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .msg-item .meta { color: var(--text-secondary); font-size: 10px; }
+        textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; resize: vertical; font-size: 12px; background: var(--input-bg); color: var(--text); }
+        .strength-tag { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: #e2e8f0; color: #475569; margin-left: 4px; font-weight: 500; }
+        .strength-tag.s-plus { background: #fef3c7; color: #92400e; }
+        .strength-tag.s { background: #fce7f3; color: #9d174d; }
+        .strength-tag.a-plus { background: #dbeafe; color: #1e40af; }
+        .strength-tag.a { background: #e0e7ff; color: #3730a3; }
+        .strength-tag.b { background: #f3f4f6; color: #4b5563; }
+        .strength-tag.c { background: #f9fafb; color: #9ca3af; }
+
+        .wheel-section { margin-top: 8px; }
+        .wheel-flex { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; }
+        .wheel-canvas-box { width: 320px; height: 320px; flex-shrink: 0; }
+        .wheel-control { display: flex; flex-direction: column; align-items: center; min-width: 120px; }
+        .wheel-info { font-size: 15px; margin-top: 12px; text-align: center; font-weight: 600; }
+        .announcement-area { background: var(--bg); border-radius: 8px; padding: 12px; max-height: 200px; overflow-y: auto; }
+        .announce-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 12px; }
+        .announce-item .meta { color: var(--text-secondary); font-size: 10px; }
+        @media (max-width: 800px) {
+            .main-grid { flex-direction: column; } .side-panel { min-width: 0; }
+            .wheel-flex { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app"></div>
+<script>
+(() => {
+    const STORAGE = 'delta_guns_v9_announce';
+    const MASTER_PASSWORD = 'wcy575859';
+
+    function loadData() {
+        const raw = localStorage.getItem(STORAGE);
+        if (raw) {
+            const data = JSON.parse(raw);
+            if (!data.nicknameMeta) data.nicknameMeta = {};
+            if (!data.passwords) data.passwords = {};
+            if (!data.announcements) data.announcements = [];
+            Object.values(data.accounts).forEach(acc => {
+                Object.keys(acc.codes).forEach(weapon => {
+                    acc.codes[weapon] = (acc.codes[weapon] || []).map(c => {
+                        if (typeof c === 'string') return { code: c, tags: [], likes: 0, likedBy: [], comments: [], history: [], value: '' };
+                        if (!c.tags) c.tags = [];
+                        if (!c.likedBy) c.likedBy = [];
+                        if (!c.comments) c.comments = [];
+                        if (!c.history) c.history = [];
+                        if (c.value === undefined) c.value = '';
+                        return c;
+                    });
+                });
+            });
+            return data;
+        }
+        return { accounts: {}, nicknames: {}, nicknameMeta: {}, passwords: {}, announcements: [] };
+    }
+    function saveData(data) { localStorage.setItem(STORAGE, JSON.stringify(data)); }
+    function getAccount(id) {
+        const data = loadData();
+        if (!data.accounts[id]) { data.accounts[id] = { codes: {}, copyLog: [], accessLog: [], messages: [] }; saveData(data); }
+        return data.accounts[id];
+    }
+    function updateAccount(id, updater) {
+        const data = loadData(); if (!data.accounts[id]) getAccount(id);
+        updater(data.accounts[id]); saveData(data);
+    }
+
+    const WEAPON_CATEGORIES = [
+        { cat: '突击步枪', icon: '🎯', weapons: [
+            { name: '堤风M7', alias: '堤风M7', strength: 'S+', strengthClass: 's-plus' },
+            { name: 'AS Val', alias: 'AS Val', strength: 'S+', strengthClass: 's-plus' },
+            { name: '腾龙', alias: '腾龙', strength: 'S', strengthClass: 's' },
+            { name: 'K416', alias: 'K416', strength: 'S', strengthClass: 's' },
+            { name: 'ASh-12', alias: 'ASh-12', strength: 'S', strengthClass: 's' },
+            { name: 'K437', alias: 'K437', strength: 'S', strengthClass: 's' },
+            { name: 'M7', alias: 'M7', strength: 'S', strengthClass: 's' },
+            { name: 'MK47', alias: 'MK47', strength: 'S', strengthClass: 's' },
+            { name: 'AUG', alias: 'AUG', strength: 'A+', strengthClass: 'a-plus' },
+            { name: 'AKM', alias: 'AKM', strength: 'A+', strengthClass: 'a-plus' },
+            { name: 'M4A1', alias: 'M4A1', strength: 'A+', strengthClass: 'a-plus' },
+            { name: 'AK-12', alias: 'AK-12', strength: 'A+', strengthClass: 'a-plus' },
+            { name: 'SCAR-H', alias: 'SCAR-H', strength: 'A', strengthClass: 'a' },
+            { name: 'QBZ-95-1', alias: 'QBZ-95-1', strength: 'A', strengthClass: 'a' },
+            { name: 'SG552', alias: 'SG552', strength: 'B', strengthClass: 'b' },
+            { name: 'CAR-15', alias: 'CAR-15', strength: 'C', strengthClass: 'c' },
+            { name: 'M16A4', alias: 'M16A4', strength: 'C', strengthClass: 'c' },
+            { name: 'AKS-74U', alias: 'AKS-74U', strength: 'C', strengthClass: 'c' },
+            { name: 'PTR-32', alias: 'PTR-32', strength: 'C', strengthClass: 'c' },
+            { name: 'G3', alias: 'G3', strength: 'B', strengthClass: 'b' },
+            { name: 'CI-19', alias: 'CI-19', strength: 'A', strengthClass: 'a' },
+            { name: 'KC17', alias: 'KC17', strength: 'A+', strengthClass: 'a-plus' },
+            { name: 'MCX LT', alias: 'MCX LT', strength: 'A', strengthClass: 'a' }
+        ]},
+        { cat: '冲锋枪', icon: '⚡', weapons: [
+            { name: 'MP7', alias: 'MP7', strength: 'S', strengthClass: 's' },
+            { name: 'SR-3M', alias: 'SR-3M', strength: 'S', strengthClass: 's' },
+            { name: 'P90', alias: 'P90', strength: 'S', strengthClass: 's' },
+            { name: 'Vector', alias: 'Vector', strength: 'S', strengthClass: 's' },
+            { name: 'MP5', alias: 'MP5', strength: 'B', strengthClass: 'b' },
+            { name: 'SMG-45', alias: 'SMG-45', strength: 'B', strengthClass: 'b' },
+            { name: 'PP-19 勇士', alias: 'PP-19 勇士', strength: 'B', strengthClass: 'b' },
+            { name: 'PP-19 野牛', alias: 'PP-19 野牛', strength: 'C', strengthClass: 'c' },
+            { name: 'UZI', alias: 'UZI', strength: 'C', strengthClass: 'c' },
+            { name: 'QCQ171', alias: 'QCQ171', strength: 'A', strengthClass: 'a' },
+            { name: 'MK4', alias: 'MK4', strength: 'S', strengthClass: 's' }
+        ]},
+        { cat: '精确射手步枪', icon: '🔭', weapons: [
+            { name: 'M14', alias: 'M14', strength: 'S+', strengthClass: 's-plus' },
+            { name: 'SR-25', alias: 'SR-25', strength: 'S+', strengthClass: 's-plus' },
+            { name: 'PSG-1', alias: 'PSG-1', strength: 'A+', strengthClass: 'a-plus' },
+            { name: 'VSS', alias: 'VSS', strength: 'A', strengthClass: 'a' },
+            { name: 'MINI-14', alias: 'MINI-14', strength: 'B', strengthClass: 'b' },
+            { name: 'SVD', alias: 'SVD', strength: 'A', strengthClass: 'a' },
+            { name: 'SKS', alias: 'SKS', strength: 'B', strengthClass: 'b' },
+            { name: 'SR9', alias: 'SR9', strength: 'B', strengthClass: 'b' },
+            { name: '杠杆步枪蜂鸟', alias: '杠杆步枪蜂鸟', strength: 'A+', strengthClass: 'a-plus' }
+        ]},
+        { cat: '轻机枪', icon: '💥', weapons: [
+            { name: 'PKM', alias: 'PKM', strength: 'S+', strengthClass: 's-plus' },
+            { name: 'M250', alias: 'M250', strength: 'S', strengthClass: 's' },
+            { name: 'M249', alias: 'M249', strength: 'A+', strengthClass: 'a-plus' },
+            { name: 'QJB-201', alias: 'QJB-201', strength: 'A+', strengthClass: 'a-plus' }
+        ]},
+        { cat: '霰弹枪', icon: '🔥', weapons: [
+            { name: 'S12K', alias: 'S12K', strength: 'A', strengthClass: 'a' },
+            { name: 'M1014', alias: 'M1014', strength: 'A', strengthClass: 'a' },
+            { name: 'M870', alias: 'M870', strength: 'A', strengthClass: 'a' },
+            { name: '725 双管', alias: '725 双管', strength: 'B', strengthClass: 'b' }
+        ]},
+        { cat: '手枪', icon: '🔫', weapons: [
+            { name: 'G18', alias: 'G18', strength: 'A', strengthClass: 'a' },
+            { name: 'G17', alias: 'G17', strength: 'B', strengthClass: 'b' },
+            { name: 'QSZ92G', alias: 'QSZ92G', strength: 'B', strengthClass: 'b' },
+            { name: '沙漠之鹰', alias: '沙漠之鹰', strength: 'A', strengthClass: 'a' },
+            { name: '93R', alias: '93R', strength: 'B', strengthClass: 'b' },
+            { name: '.357 左轮', alias: '.357 左轮', strength: 'B', strengthClass: 'b' },
+            { name: 'M1911', alias: 'M1911', strength: 'B', strengthClass: 'b' }
+        ]},
+        { cat: '特殊武器', icon: '🏹', weapons: [
+            { name: '复合弓', alias: '复合弓', strength: 'B', strengthClass: 'b' }
+        ]}
+    ];
+    const WEAPON_ICON_MAP = {};
+    WEAPON_CATEGORIES.forEach(cat => cat.weapons.forEach(w => { WEAPON_ICON_MAP[w.alias] = cat.icon; }));
+
+    const WHEEL_POOL = [];
+    WEAPON_CATEGORIES.forEach(cat => {
+        cat.weapons.forEach(w => {
+            const isMain = ['突击步枪','冲锋枪','精确射手步枪','轻机枪'].includes(cat.cat);
+            const weight = isMain ? 9 : 1;
+            for (let i = 0; i < weight; i++) WHEEL_POOL.push(w.alias);
+        });
+    });
+
+    let currentUserId = null, viewingUserId = null, searchFilter = '', categoryCollapsed = {}, rankingTab = 'day', theme = 'light';
+    let batchMode = false, selectedWeapons = {};
+    let wheelAnimation = null, wheelRotation = 0, wheelResultText = '', wheelHighlightIndex = -1;
+
+    function isOwnerMode() { return currentUserId && viewingUserId === currentUserId; }
+    function isVisitorMode() { return currentUserId && viewingUserId && viewingUserId !== currentUserId; }
+    function isMaster() { return currentUserId === '1'; }
+    function getTodayStart() { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+    function getNickname(id) { return loadData().nicknames[id] || null; }
+    function isNicknameFixed(id) { const data = loadData(); return data.nicknames[id] && (data.nicknameMeta[id] || 0) >= 1; }
+    function setNickname(id, name) {
+        const data = loadData();
+        if (data.nicknames[id] && (data.nicknameMeta[id] || 0) >= 1) return { success: false, message: '昵称已固定' };
+        for (const [k, v] of Object.entries(data.nicknames)) { if (k !== id && v === name) return { success: false, message: '昵称重复' }; }
+        data.nicknames[id] = name;
+        data.nicknameMeta[id] = data.nicknames[id] ? (data.nicknameMeta[id] || 0) + 1 : 0;
+        saveData(data);
+        return { success: true };
+    }
+    function hasPassword(id) { return !!loadData().passwords[id]; }
+    function checkPassword(id, password) { return loadData().passwords[id] === password; }
+    function setPassword(id, password) {
+        const data = loadData();
+        if (!/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{1,16}$/.test(password)) return { success: false, message: '密码需英文数字结合，最大16位' };
+        data.passwords[id] = password;
+        saveData(data);
+        return { success: true };
+    }
+    function sortWeaponsByUsage(weapons, copyLog, start) {
+        const cnt = {}; (copyLog||[]).filter(l => l.time >= start).forEach(l => cnt[l.weapon] = (cnt[l.weapon]||0)+1);
+        return [...weapons].sort((a,b) => (cnt[b.alias]||0) - (cnt[a.alias]||0));
+    }
+    function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function parseSearchValue(filter) {
+        const match = filter.match(/^(.+?)\s*>=(\d+)$/);
+        if (match) return { weapon: match[1].trim(), value: parseInt(match[2]) };
+        return { weapon: filter, value: null };
+    }
+    function getWheelData() {
+        const data = loadData();
+        const today = new Date().toDateString();
+        if (!data.wheel || data.wheel.date !== today) {
+            const shuffled = [...WHEEL_POOL].sort(() => Math.random() - 0.5);
+            const unique = [...new Set(shuffled)].slice(0, 40);
+            data.wheel = { date: today, weapons: unique, results: [] };
+            saveData(data);
+        }
+        return data.wheel;
+    }
+    function drawWheel(weapons, rotation = 0, highlightIndex = -1) {
+        const canvas = document.getElementById('wheelCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const num = weapons.length;
+        const angle = (2 * Math.PI) / num;
+        const radius = canvas.width / 2 - 10;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < num; i++) {
+            const startAngle = i * angle + rotation;
+            const endAngle = startAngle + angle;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width/2, canvas.height/2);
+            ctx.arc(canvas.width/2, canvas.height/2, radius, startAngle, endAngle);
+            if (i === highlightIndex) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.shadowColor = '#f59e0b';
+                ctx.shadowBlur = 12;
+            } else {
+                ctx.fillStyle = i % 2 === 0 ? '#e2e8f0' : '#f8fafc';
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+            }
+            ctx.fill();
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#94a3b8';
+            ctx.stroke();
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.rotate(startAngle + angle/2);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#1e293b';
+            ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+            const label = weapons[i].length > 12 ? weapons[i].substring(0,12)+'…' : weapons[i];
+            ctx.fillText(label, radius - 14, 4);
+            ctx.restore();
+        }
+    }
+    function startSpinAnimation(targetWeapon) {
+        const data = loadData();
+        const wheel = getWheelData();
+        const idx = wheel.weapons.indexOf(targetWeapon);
+        if (idx === -1) return;
+        const num = wheel.weapons.length;
+        const anglePerSegment = (2 * Math.PI) / num;
+        const targetAngle = (2 * Math.PI) - (idx * anglePerSegment + anglePerSegment/2) + Math.PI*2*5;
+        const startRotation = wheelRotation;
+        const duration = 2000;
+        const startTime = performance.now();
+        wheelHighlightIndex = -1;
+        cancelAnimationFrame(wheelAnimation);
+        function animate(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            wheelRotation = startRotation + targetAngle * eased;
+            drawWheel(wheel.weapons, wheelRotation, -1);
+            if (progress < 1) {
+                wheelAnimation = requestAnimationFrame(animate);
+            } else {
+                wheelAnimation = null;
+                wheelResultText = targetWeapon;
+                wheelHighlightIndex = idx;
+                drawWheel(wheel.weapons, wheelRotation, idx);
+                document.getElementById('wheelResult').textContent = `来一把美滋滋的${targetWeapon}`;
+                const spinBtn = document.getElementById('spinBtn');
+                if (spinBtn) { spinBtn.disabled = false; spinBtn.textContent = '🎲 转动'; }
+            }
+        }
+        wheelAnimation = requestAnimationFrame(animate);
+    }
+    window.spinWheel = function() {
+        if (wheelAnimation) return;
+        const data = loadData();
+        const wheel = getWheelData();
+        const rand = Math.floor(Math.random() * wheel.weapons.length);
+        const result = wheel.weapons[rand];
+        wheel.results.push(result);
+        saveData(data);
+        document.getElementById('wheelResult').textContent = '';
+        const spinBtn = document.getElementById('spinBtn');
+        if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = '旋转中...'; }
+        startSpinAnimation(result);
+    };
+    window.copyAccountId = (id) => { navigator.clipboard.writeText(id).then(() => alert('账号已复制')); };
+
+    function render() {
+        const data = loadData();
+        const viewAccount = viewingUserId ? data.accounts[viewingUserId] : null;
+        const searchParsed = parseSearchValue(searchFilter);
+        const wheel = getWheelData();
+        const html = [];
+
+        html.push(`<div class="top-bar">`);
+        html.push(`<div class="user-area">`);
+        if (currentUserId) {
+            const nick = getNickname(currentUserId);
+            html.push(nick ? `<span class="user-nickname">${escHtml(nick)}</span>` : '');
+            html.push(`<span class="user-id-bubble" onclick="copyAccountId('${escHtml(currentUserId)}')" title="点击复制账号">👤 ${escHtml(currentUserId)} 📋</span>`);
+            if (isMaster()) html.push(`<span class="mode-badge owner">👑 主人</span>`);
+            else if (isOwnerMode()) html.push(`<span class="mode-badge">✏️ 编辑模式</span>`);
+            else if (isVisitorMode()) html.push(`<span class="mode-badge visitor">👀 访客模式 · ${escHtml(viewingUserId)}</span>`);
+            html.push(`<button class="btn btn-sm" onclick="logout()">退出</button>`);
+        } else html.push(`<span style="color:var(--text-secondary);">未登录</span>`);
+        html.push(`</div>`);
+        html.push(`<div class="login-box"><input type="text" id="loginIdInput" placeholder="数字ID" maxlength="10" /><input type="password" id="loginPassInput" placeholder="密码" maxlength="16" /><button class="btn btn-primary" onclick="doLogin()">进入</button></div>`);
+        html.push(`<div class="search-area"><input type="text" id="searchInput" placeholder="枪械/账号 或 枪械>=价值" value="${escHtml(searchFilter||'')}" /><button class="btn" onclick="doSearch()">🔍</button>${!isOwnerMode() && viewingUserId ? `<button class="btn" onclick="backToMyPage()">🏠 我的主页</button>` : ''}</div>`);
+        html.push(`<button class="btn btn-sm" onclick="toggleTheme()">🌓 ${theme === 'light' ? '深色' : '浅色'}</button>`);
+        html.push(`</div>`);
+
+        if (!currentUserId && !viewingUserId) {
+            html.push(`<div class="section-card"><div class="card-body" style="text-align:center;">请登录或搜索他人账号查看</div></div>`);
+            document.getElementById('app').innerHTML = html.join('');
+            return;
+        }
+
+        if (isOwnerMode()) {
+            const nick = getNickname(currentUserId) || '', fixed = isNicknameFixed(currentUserId);
+            html.push(`<div class="section-card"><div class="card-body" style="display:flex;align-items:center;gap:10px;"><strong>✏️ 昵称：</strong><input type="text" id="nicknameInput" value="${escHtml(nick)}" ${fixed?'disabled':''} style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;width:160px;background:var(--input-bg);color:var(--text);" />${fixed?'<span>🔒 已固定</span>':`<button class="btn btn-sm btn-primary" onclick="saveNickname()">保存</button>${nick?'<span style="color:#92400e;">⚠️ 修改后固定</span>':''}`}</div></div>`);
+        }
+        if (isMaster() && viewingUserId && viewingUserId !== '1') {
+            html.push(`<div style="text-align:right;"><button class="btn btn-danger btn-sm" onclick="deleteAccount('${escHtml(viewingUserId)}')">🗑️ 删除该账号</button></div>`);
+        }
+
+        // 公告栏（全站公告，所有页面显示）
+        const announcements = data.announcements || [];
+        html.push(`<div class="section-card"><div class="card-header"><h3>📢 公告栏</h3></div><div class="card-body"><div class="announcement-area">`);
+        if (announcements.length === 0) html.push(`<div style="font-size:12px;color:var(--text-secondary);">暂无公告</div>`);
+        announcements.slice(-10).reverse().forEach(a => {
+            html.push(`<div class="announce-item"><div class="meta">🛡️ 主人 · ${new Date(a.time).toLocaleString()}</div><div>${escHtml(a.text)}</div></div>`);
+        });
+        html.push(`</div>`);
+        if (isMaster()) {
+            html.push(`<textarea id="announceInput" maxlength="500" placeholder="发布新公告…" style="margin-top:8px;"></textarea><button class="btn btn-primary btn-sm" onclick="postAnnouncement()" style="margin-top:4px;">📢 发布公告</button>`);
+        }
+        html.push(`</div></div>`);
+
+        html.push(`<div class="main-grid">`);
+        html.push(`<div class="weapon-panel"><div class="section-card">`);
+        const weaponTitle = viewingUserId ? (getNickname(viewingUserId) ? escHtml(getNickname(viewingUserId)) + ' 的武器库' : escHtml(viewingUserId) + ' 的武器库') : '我的武器库';
+        html.push(`<div class="card-header"><h3>🔫 ${weaponTitle}</h3><div style="display:flex;gap:8px;">${isOwnerMode()?`<button class="btn btn-sm" onclick="toggleBatchMode()">${batchMode?'✅ 退出批量':'☑️ 批量管理'}</button>`:''}<button class="btn btn-sm" onclick="expandAll()">📂 展开</button><button class="btn btn-sm" onclick="collapseAll()">📁 折叠</button></div></div>`);
+        html.push(`<div class="card-body">`);
+        const now = Date.now(), todayStart = getTodayStart(), weekAgo = now - 7*86400000, monthAgo = now - 30*86400000;
+        const periodMap = { day: todayStart, week: weekAgo, month: monthAgo };
+        WEAPON_CATEGORIES.forEach(cat => {
+            const filteredBase = cat.weapons.filter(w => {
+                if (!searchParsed.weapon) return true;
+                const nameMatch = w.name.toLowerCase().includes(searchParsed.weapon.toLowerCase()) || w.alias.toLowerCase().includes(searchParsed.weapon.toLowerCase());
+                if (searchParsed.value === null) return nameMatch;
+                if (!nameMatch) return false;
+                const codes = viewAccount?.codes[w.alias] || [];
+                return codes.some(c => parseInt(c.value||'0') >= searchParsed.value);
+            });
+            if (filteredBase.length === 0 && searchFilter) return;
+            const sorted = sortWeaponsByUsage(filteredBase, viewAccount?.copyLog||[], periodMap[rankingTab]||todayStart);
+            const catKey = cat.cat;
+            if (!(catKey in categoryCollapsed)) categoryCollapsed[catKey] = false;
+            html.push(`<div class="category-header" onclick="toggleCategory('${escHtml(catKey)}')"><h4>${cat.icon} ${cat.cat} <span style="font-size:11px;">${sorted.length}把</span></h4><span class="arrow">▼</span></div>`);
+            html.push(`<div class="category-content ${categoryCollapsed[catKey]?'collapsed':''}" id="cat-${escHtml(catKey)}">`);
+            sorted.forEach(weapon => {
+                const codes = viewAccount?.codes[weapon.alias] || [];
+                const disabled = !isOwnerMode();
+                const icon = WEAPON_ICON_MAP[weapon.alias]||'🔫';
+                html.push(`<div class="weapon-block" data-weapon="${escHtml(weapon.alias)}">`);
+                html.push(`<div class="weapon-header">${batchMode&&isOwnerMode()?`<input type="checkbox" class="weapon-check" onchange="toggleSelectWeapon('${escHtml(weapon.alias)}', this.checked)" ${selectedWeapons[weapon.alias]?'checked':''} />`:''}<span class="weapon-name"><span class="weapon-icon">${icon}</span>${escHtml(weapon.name)}<span class="strength-tag ${weapon.strengthClass||'b'}">${weapon.strength||'B'}</span><small>${escHtml(weapon.alias)}</small></span></div>`);
+                html.push(`<div class="code-list">`);
+                codes.forEach((codeObj, idx) => {
+                    const codeStr = codeObj.code||'';
+                    const tags = codeObj.tags||[];
+                    const likes = codeObj.likes||0;
+                    const liked = (codeObj.likedBy||[]).includes(currentUserId);
+                    const comments = codeObj.comments||[];
+                    const history = codeObj.history||[];
+                    const value = codeObj.value||'';
+                    html.push(`<div class="code-row">`);
+                    html.push(`<input class="code-input" value="${escHtml(codeStr)}" placeholder="改枪码" ${disabled?'disabled':''} data-weapon="${escHtml(weapon.alias)}" data-index="${idx}" oninput="onCodeChange(this)" />`);
+                    html.push(`<button class="copy-btn" onclick="copyCode('${escHtml(weapon.alias)}', ${idx})">📋</button>`);
+                    html.push(`<button class="share-btn" onclick="shareCode('${escHtml(weapon.alias)}', ${idx})">🔗</button>`);
+                    html.push(`<button class="like-btn" onclick="toggleLike('${escHtml(weapon.alias)}', ${idx})">${liked?'❤️':'🤍'} ${likes}</button>`);
+                    html.push(`<input class="value-input" placeholder="价值" value="${escHtml(value)}" ${disabled?'disabled':''} onchange="onValueChange(this, '${escHtml(weapon.alias)}', ${idx})" title="枪械价值（数字）" />`);
+                    html.push(`<input class="tag-input" placeholder="标签,逗号分隔" value="${escHtml(tags.join(','))}" ${disabled?'disabled':''} onchange="onTagChange(this, '${escHtml(weapon.alias)}', ${idx})" />`);
+                    if (history.length > 0) {
+                        html.push(`<select class="history-select" onchange="rollbackCode('${escHtml(weapon.alias)}', ${idx}, this.value)"><option value="">历史版本</option>${history.map((h,i)=>`<option value="${i}">版本${i+1}: ${escHtml(h.substring(0,15))}...</option>`).join('')}</select>`);
+                    }
+                    if (!disabled) html.push(`<button class="delete-code-btn" onclick="deleteCode('${escHtml(weapon.alias)}', ${idx})">✕</button>`);
+                    html.push(`<div class="comment-area">${comments.map((c,ci)=>`<div class="comment-item"><span><span class="meta">${escHtml(c.from)}：</span>${escHtml(c.text)}</span>${(isOwnerMode()||c.from===currentUserId)?`<button class="btn-delete-msg" onclick="deleteComment('${escHtml(weapon.alias)}',${idx},${ci})">✕</button>`:''}</div>`).join('')}<input class="comment-input" placeholder="添加评论…" onkeydown="if(event.key==='Enter'){addComment('${escHtml(weapon.alias)}',${idx},this);}" /></div>`);
+                    html.push(`</div>`);
+                });
+                if (!disabled) html.push(`<button class="add-code-btn" onclick="addCode('${escHtml(weapon.alias)}')">+ 添加改枪码</button>`);
+                html.push(`</div></div>`);
+            });
+            html.push(`</div>`);
+        });
+        html.push(`</div></div></div>`);
+
+        html.push(`<div class="side-panel">`);
+        if (viewAccount) {
+            const rank = (logs, start) => { const cnt = {}; (logs||[]).filter(l=>l.time>=start).forEach(l=>cnt[l.weapon]=(cnt[l.weapon]||0)+1); return Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,10); };
+            const daily=rank(viewAccount.copyLog,todayStart), weekly=rank(viewAccount.copyLog,weekAgo), monthly=rank(viewAccount.copyLog,monthAgo);
+            const totalRank = Object.entries((()=>{const cnt={};(viewAccount.copyLog||[]).forEach(l=>cnt[l.weapon]=(cnt[l.weapon]||0)+1);return cnt;})()).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            html.push(`<div class="section-card"><div class="card-header"><h3>📊 使用率排行</h3></div><div class="card-body"><div class="tab-row">${['day','week','month','total'].map(t=>`<button class="tab-btn ${rankingTab===t?'active':''}" onclick="switchRankTab('${t}')">${t==='day'?'日':t==='week'?'周':t==='month'?'月':'总'}</button>`).join('')}</div><div class="rank-list" id="rankDisplay"></div></div></div>`);
+            setTimeout(()=>{const el=document.getElementById('rankDisplay');if(el){const cr=rankingTab==='day'?daily:rankingTab==='week'?weekly:rankingTab==='month'?monthly:totalRank;el.innerHTML=cr.length?cr.map(([w,c],i)=>`<div class="rank-item"><span>${i+1}. ${escHtml(w)}</span><span>${c}次</span></div>`).join(''):'<div>暂无数据</div>';}},0);
+            const accessRank = Object.entries(data.accounts).map(([id,acc])=>({id,count:(acc.accessLog||[]).filter(l=>l.time>=todayStart).length})).sort((a,b)=>b.count-a.count).slice(0,10);
+            html.push(`<div class="section-card"><div class="card-header"><h3>👀 今日被访问排行</h3></div><div class="card-body"><div class="rank-list">${accessRank.length?accessRank.map((a,i)=>`<div class="rank-item"><span>${i+1}. ${escHtml(a.id)}</span><span>${a.count}次</span></div>`).join(''):'<div>暂无数据</div>'}</div></div></div>`);
+            if (isMaster()) {
+                const allLogs=[]; Object.entries(data.accounts).forEach(([id,acc])=>{(acc.copyLog||[]).forEach(l=>allLogs.push({...l,account:id}));});
+                const todayCopy={}; allLogs.filter(l=>l.time>=todayStart).forEach(l=>{const k=l.account;todayCopy[k]=(todayCopy[k]||0)+1;});
+                const sortedCopy=Object.entries(todayCopy).sort((a,b)=>b[1]-a[1]).slice(0,10);
+                html.push(`<div class="section-card"><div class="card-header"><h3>👑 全站今日复制次数</h3></div><div class="card-body"><div class="rank-list">${sortedCopy.length?sortedCopy.map(([id,c],i)=>`<div class="rank-item"><span>${i+1}. ${escHtml(id)}</span><span>${c}次</span></div>`).join(''):'<div>暂无数据</div>'}</div></div></div>`);
+            }
+        }
+        if (viewAccount) {
+            const msgs=viewAccount.messages||[];
+            html.push(`<div class="section-card"><div class="card-header"><h3>💬 留言板</h3></div><div class="card-body"><div class="message-area">${msgs.length?msgs.map((m,i)=>{const canDel=isOwnerMode()||(currentUserId&&m.from===currentUserId);return`<div class="msg-item"><div><div class="meta">${escHtml(m.from)} · ${new Date(m.time).toLocaleString()}</div><div>${escHtml(m.text)}</div></div>${canDel?`<button class="btn-delete-msg" onclick="deleteMessage('${escHtml(viewingUserId)}',${i})">🗑️</button>`:''}</div>`;}).join(''):'<div>暂无留言</div>'}</div>${!isOwnerMode()?`<textarea id="msgInput" maxlength="200" placeholder="留言"></textarea><button class="btn btn-primary" onclick="postMessage('${escHtml(viewingUserId)}')">📨 提交</button>`:''}</div></div>`);
+        }
+        html.push(`</div></div>`);
+
+        if (isOwnerMode()) {
+            html.push(`<div class="section-card wheel-section"><div class="card-header"><h3>🎡 每日转盘</h3></div><div class="card-body"><div class="wheel-flex"><div class="wheel-canvas-box"><canvas id="wheelCanvas" width="320" height="320"></canvas></div><div class="wheel-control"><button class="btn btn-primary btn-sm" id="spinBtn" ${wheelAnimation ? 'disabled' : ''} onclick="spinWheel()">${wheelAnimation ? '旋转中...' : '🎲 转动'}</button><div class="wheel-info" id="wheelResult">${wheelResultText ? '来一把美滋滋的'+wheelResultText : ''}</div></div></div></div></div>`);
+        }
+
+        document.getElementById('app').innerHTML = html.join('');
+        if (isOwnerMode()) {
+            const wData = getWheelData();
+            drawWheel(wData.weapons, wheelRotation, wheelHighlightIndex);
+        }
+    }
+
+    // 公告发布
+    window.postAnnouncement = function() {
+        if (!isMaster()) return;
+        const text = document.getElementById('announceInput').value.trim();
+        if (!text) return;
+        const data = loadData();
+        data.announcements = data.announcements || [];
+        data.announcements.push({ text, time: Date.now() });
+        saveData(data);
+        render();
+    };
+
+    // 其他交互函数
+    window.toggleCategory = (c) => { categoryCollapsed[c]=!categoryCollapsed[c]; render(); };
+    window.expandAll = () => { WEAPON_CATEGORIES.forEach(c=>categoryCollapsed[c.cat]=false); render(); };
+    window.collapseAll = () => { WEAPON_CATEGORIES.forEach(c=>categoryCollapsed[c.cat]=true); render(); };
+    window.switchRankTab = (t) => { rankingTab=t; render(); };
+    window.toggleTheme = () => { theme=theme==='light'?'dark':'light'; document.documentElement.classList.toggle('dark-mode',theme==='dark'); localStorage.setItem('delta_theme',theme); render(); };
+    window.toggleBatchMode = () => { batchMode=!batchMode; selectedWeapons={}; render(); };
+    window.toggleSelectWeapon = (w, checked) => { if(checked) selectedWeapons[w]=true; else delete selectedWeapons[w]; };
+    window.batchDelete = () => { if (!Object.keys(selectedWeapons).length) return alert('请勾选武器'); if (!confirm('确定删除？')) return; updateAccount(currentUserId, acc => { Object.keys(selectedWeapons).forEach(w => delete acc.codes[w]); }); batchMode=false; selectedWeapons={}; render(); };
+    window.batchExport = () => { const data=loadData(); const acc=data.accounts[currentUserId]; if(!acc)return; const exp={}; Object.keys(selectedWeapons).forEach(w=>{if(acc.codes[w])exp[w]=acc.codes[w];}); const b=new Blob([JSON.stringify(exp,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='改枪码导出.json'; a.click(); };
+    window.shareCode = (weapon, idx) => { const url=new URL(window.location); url.searchParams.set('weapon',weapon); url.searchParams.set('idx',idx); navigator.clipboard.writeText(url.toString()).then(()=>alert('链接已复制')); };
+    window.toggleLike = (weapon, idx) => { if(!currentUserId) return alert('请登录'); updateAccount(viewingUserId||currentUserId, acc=>{ if(!acc.codes[weapon])acc.codes[weapon]=[]; const obj=acc.codes[weapon][idx]; if(!obj.likedBy)obj.likedBy=[]; if(obj.likedBy.includes(currentUserId)){obj.likedBy=obj.likedBy.filter(id=>id!==currentUserId);obj.likes=Math.max(0,(obj.likes||0)-1);}else{obj.likedBy.push(currentUserId);obj.likes=(obj.likes||0)+1;} }); render(); };
+    window.addComment = (weapon, idx, input) => { const text=input.value.trim(); if(!text||!currentUserId)return; updateAccount(viewingUserId||currentUserId, acc=>{ if(!acc.codes[weapon])acc.codes[weapon]=[]; if(!acc.codes[weapon][idx].comments)acc.codes[weapon][idx].comments=[]; acc.codes[weapon][idx].comments.push({from:currentUserId,text,time:Date.now()}); }); input.value=''; render(); };
+    window.deleteComment = (weapon, idx, ci) => { updateAccount(viewingUserId||currentUserId, acc=>{ if(acc.codes[weapon]&&acc.codes[weapon][idx]&&acc.codes[weapon][idx].comments) acc.codes[weapon][idx].comments.splice(ci,1); }); render(); };
+    window.onValueChange = (input, weapon, idx) => { const val=input.value.trim(); if(val&&!/^\d+$/.test(val)){alert('纯数字');input.value='';return;} updateAccount(currentUserId, acc=>{ if(!acc.codes[weapon])acc.codes[weapon]=[]; if(!acc.codes[weapon][idx])acc.codes[weapon][idx]={code:'',tags:[],likes:0,likedBy:[],comments:[],history:[],value:''}; acc.codes[weapon][idx].value=val; }); };
+    window.onTagChange = (input, weapon, idx) => { const tags=input.value.split(',').map(t=>t.trim()).filter(Boolean); updateAccount(currentUserId, acc=>{ if(!acc.codes[weapon])acc.codes[weapon]=[]; if(!acc.codes[weapon][idx])acc.codes[weapon][idx]={code:'',tags:[],likes:0,likedBy:[],comments:[],history:[],value:''}; acc.codes[weapon][idx].tags=tags; }); };
+    window.onCodeChange = function(input) { if(!isOwnerMode())return; const weapon=input.dataset.weapon, idx=parseInt(input.dataset.index), value=input.value.trim(); updateAccount(currentUserId, acc=>{ if(!acc.codes[weapon])acc.codes[weapon]=[]; if(!acc.codes[weapon][idx])acc.codes[weapon][idx]={code:'',tags:[],likes:0,likedBy:[],comments:[],history:[],value:''}; if(acc.codes[weapon][idx].code&&acc.codes[weapon][idx].code!==value){ acc.codes[weapon][idx].history.push(acc.codes[weapon][idx].code); } acc.codes[weapon][idx].code=value; }); };
+    window.rollbackCode = (weapon, idx, historyIdx) => { if(!historyIdx&&historyIdx!=='0')return; updateAccount(currentUserId, acc=>{ const obj=acc.codes[weapon][idx]; if(obj&&obj.history&&obj.history[historyIdx]){ obj.code=obj.history[historyIdx]; obj.history=obj.history.slice(0,parseInt(historyIdx)); } }); render(); };
+    window.copyCode = (weapon, idx) => { const data=loadData(); const acc=data.accounts[viewingUserId||currentUserId]; if(!acc||!acc.codes[weapon]||!acc.codes[weapon][idx])return alert('代码为空'); const code=acc.codes[weapon][idx].code||''; navigator.clipboard.writeText(code).then(()=>{ updateAccount(viewingUserId||currentUserId, a=>{a.copyLog.push({weapon,time:Date.now()});}); alert('已复制'); render(); }).catch(()=>alert('复制失败')); };
+    window.addCode = (w) => { updateAccount(currentUserId, a=>{if(!a.codes[w])a.codes[w]=[]; a.codes[w].push({code:'',tags:[],likes:0,likedBy:[],comments:[],history:[],value:''});}); render(); };
+    window.deleteCode = (w,i) => { updateAccount(currentUserId, a=>{if(a.codes[w]){a.codes[w].splice(i,1); if(!a.codes[w].length)delete a.codes[w];}}); render(); };
+    window.doLogin = function() {
+        const id=document.getElementById('loginIdInput').value.trim();
+        const pass=document.getElementById('loginPassInput').value.trim();
+        if(!/^\d{1,10}$/.test(id)) return alert('请输入1-10位纯数字ID');
+        if(id==='1'){ if(pass!==MASTER_PASSWORD) return alert('主人密码错误'); }
+        else { if(hasPassword(id)){ if(!checkPassword(id,pass)) return alert('密码错误'); } else { if(!pass) return alert('请设置密码（英文数字结合，最长16位）'); const r=setPassword(id,pass); if(!r.success) return alert(r.message); } }
+        getAccount(id); currentUserId=id; viewingUserId=id; searchFilter=''; render();
+    };
+    window.logout = () => { currentUserId=null; viewingUserId=null; searchFilter=''; categoryCollapsed={}; rankingTab='day'; batchMode=false; selectedWeapons={}; wheelResultText=''; wheelHighlightIndex=-1; render(); };
+    window.doSearch = () => { const v=document.getElementById('searchInput').value.trim(); if(/^\d+$/.test(v)){const d=loadData();if(d.accounts[v]){viewingUserId=v;if(!currentUserId)currentUserId='guest_'+Date.now();updateAccount(v,a=>{a.accessLog.push({time:Date.now()});});searchFilter='';render();}else alert('账号不存在');}else{searchFilter=v;render();} };
+    window.backToMyPage = () => { if(currentUserId&&/^\d+$/.test(currentUserId)){viewingUserId=currentUserId;searchFilter='';render();} };
+    window.deleteAccount = (id) => { if(!isMaster())return; if(id==='1')return alert('不能删除主人'); if(confirm('确定删除？')){const d=loadData();delete d.accounts[id];delete d.nicknames[id];delete d.nicknameMeta[id];saveData(d);if(viewingUserId===id)viewingUserId=currentUserId;render();} };
+    window.saveNickname = () => { const n=document.getElementById('nicknameInput')?.value.trim(); if(!n)return; const r=setNickname(currentUserId,n); if(!r.success)alert(r.message); render(); };
+    window.postMessage = (tid) => { const t=document.getElementById('msgInput').value.trim(); if(!t||t.length>200)return; updateAccount(tid,a=>{a.messages.push({from:currentUserId,text:t,time:Date.now()});}); render(); };
+    window.deleteMessage = (aid,idx) => { const d=loadData(); const a=d.accounts[aid]; if(!a)return; if(currentUserId===aid||a.messages[idx]?.from===currentUserId){a.messages.splice(idx,1);saveData(d);render();} };
+
+    theme = localStorage.getItem('delta_theme')||'light';
+    if(theme==='dark') document.documentElement.classList.add('dark-mode');
+    const params=new URLSearchParams(window.location.search);
+    const shareWeapon=params.get('weapon'), shareIdx=parseInt(params.get('idx'));
+    if(shareWeapon&&!isNaN(shareIdx)){
+        viewingUserId=Object.keys(loadData().accounts).find(id=>loadData().accounts[id].codes[shareWeapon]?.[shareIdx])||'share_view';
+        currentUserId=null;
+        searchFilter='';
+    }
+    render();
+})();
+</script>
+</body>
+</html>
