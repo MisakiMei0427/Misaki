@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>三角洲行动 · 改枪码便签 | 公告版</title>
+    <title>三角洲行动 · 改枪码便签</title>
     <style>
         :root {
             --bg: #f4f6f9; --card-bg: #ffffff; --text: #1e293b; --text-secondary: #64748b;
@@ -20,7 +20,7 @@
         .container { max-width: 1200px; width: 100%; display: flex; flex-direction: column; gap: 16px; }
         .top-bar { background: var(--card-bg); border-radius: 12px; padding: 14px 18px; box-shadow: var(--shadow); display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px solid var(--border); }
         .user-area { display: flex; align-items: center; gap: 10px; flex: 1; flex-wrap: wrap; }
-        .user-nickname { font-weight: 700; font-size: 18px; color: var(--accent); cursor: default; }
+        .user-nickname { font-weight: 700; font-size: 18px; color: var(--accent); }
         .user-id-bubble { font-size: 12px; background: var(--accent-light); padding: 4px 10px; border-radius: 16px; color: var(--text); cursor: pointer; user-select: none; display: flex; align-items: center; gap: 4px; }
         .user-id-bubble:hover { background: var(--hover-bg); }
         .mode-badge { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: #dbeafe; color: #1e40af; font-weight: 600; }
@@ -80,10 +80,8 @@
         .history-select { font-size: 10px; padding: 2px 4px; border: 1px solid var(--border); border-radius: 4px; background: var(--input-bg); color: var(--text); }
         .rank-list { background: var(--bg); border-radius: 8px; padding: 10px; }
         .rank-item { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; }
-        .rank-item .name { font-weight: 600; }
         .message-area { background: var(--bg); border-radius: 8px; padding: 12px; max-height: 250px; overflow-y: auto; }
-        .msg-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 12px; display: flex; justify-content: space-between; align-items: flex-start; }
-        .msg-item .meta { color: var(--text-secondary); font-size: 10px; }
+        .msg-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 12px; display: flex; justify-content: space-between; }
         textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; resize: vertical; font-size: 12px; background: var(--input-bg); color: var(--text); }
         .strength-tag { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: #e2e8f0; color: #475569; margin-left: 4px; font-weight: 500; }
         .strength-tag.s-plus { background: #fef3c7; color: #92400e; }
@@ -92,7 +90,6 @@
         .strength-tag.a { background: #e0e7ff; color: #3730a3; }
         .strength-tag.b { background: #f3f4f6; color: #4b5563; }
         .strength-tag.c { background: #f9fafb; color: #9ca3af; }
-
         .wheel-section { margin-top: 8px; }
         .wheel-flex { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; }
         .wheel-canvas-box { width: 320px; height: 320px; flex-shrink: 0; }
@@ -102,16 +99,17 @@
         .announce-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 12px; }
         .announce-item .meta { color: var(--text-secondary); font-size: 10px; }
         @media (max-width: 800px) {
-            .main-grid { flex-direction: column; } .side-panel { min-width: 0; }
+            .main-grid { flex-direction: column; }
             .wheel-flex { flex-direction: column; gap: 12px; }
         }
     </style>
 </head>
 <body>
 <div class="container" id="app"></div>
+
 <script>
 (() => {
-    const STORAGE = 'delta_guns_v9_announce';
+    const STORAGE = 'delta_guns_final_v1';
     const MASTER_PASSWORD = 'wcy575859';
 
     function loadData() {
@@ -138,6 +136,7 @@
         }
         return { accounts: {}, nicknames: {}, nicknameMeta: {}, passwords: {}, announcements: [] };
     }
+
     function saveData(data) { localStorage.setItem(STORAGE, JSON.stringify(data)); }
     function getAccount(id) {
         const data = loadData();
@@ -300,19 +299,12 @@
             ctx.moveTo(canvas.width/2, canvas.height/2);
             ctx.arc(canvas.width/2, canvas.height/2, radius, startAngle, endAngle);
             if (i === highlightIndex) {
-                ctx.fillStyle = '#fbbf24';
-                ctx.shadowColor = '#f59e0b';
-                ctx.shadowBlur = 12;
+                ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 12;
             } else {
-                ctx.fillStyle = i % 2 === 0 ? '#e2e8f0' : '#f8fafc';
-                ctx.shadowColor = 'transparent';
-                ctx.shadowBlur = 0;
+                ctx.fillStyle = i % 2 === 0 ? '#e2e8f0' : '#f8fafc'; ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
             }
-            ctx.fill();
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.strokeStyle = '#94a3b8';
-            ctx.stroke();
+            ctx.fill(); ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#94a3b8'; ctx.stroke();
             ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.rotate(startAngle + angle/2);
@@ -357,20 +349,6 @@
         }
         wheelAnimation = requestAnimationFrame(animate);
     }
-    window.spinWheel = function() {
-        if (wheelAnimation) return;
-        const data = loadData();
-        const wheel = getWheelData();
-        const rand = Math.floor(Math.random() * wheel.weapons.length);
-        const result = wheel.weapons[rand];
-        wheel.results.push(result);
-        saveData(data);
-        document.getElementById('wheelResult').textContent = '';
-        const spinBtn = document.getElementById('spinBtn');
-        if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = '旋转中...'; }
-        startSpinAnimation(result);
-    };
-    window.copyAccountId = (id) => { navigator.clipboard.writeText(id).then(() => alert('账号已复制')); };
 
     function render() {
         const data = loadData();
@@ -410,7 +388,6 @@
             html.push(`<div style="text-align:right;"><button class="btn btn-danger btn-sm" onclick="deleteAccount('${escHtml(viewingUserId)}')">🗑️ 删除该账号</button></div>`);
         }
 
-        // 公告栏（全站公告，所有页面显示）
         const announcements = data.announcements || [];
         html.push(`<div class="section-card"><div class="card-header"><h3>📢 公告栏</h3></div><div class="card-body"><div class="announcement-area">`);
         if (announcements.length === 0) html.push(`<div style="font-size:12px;color:var(--text-secondary);">暂无公告</div>`);
@@ -508,25 +485,34 @@
         }
 
         document.getElementById('app').innerHTML = html.join('');
-        if (isOwnerMode()) {
-            const wData = getWheelData();
-            drawWheel(wData.weapons, wheelRotation, wheelHighlightIndex);
-        }
+        if (isOwnerMode()) drawWheel(wheel.weapons, wheelRotation, wheelHighlightIndex);
     }
 
-    // 公告发布
-    window.postAnnouncement = function() {
+    window.postAnnouncement = () => {
         if (!isMaster()) return;
         const text = document.getElementById('announceInput').value.trim();
         if (!text) return;
         const data = loadData();
-        data.announcements = data.announcements || [];
         data.announcements.push({ text, time: Date.now() });
         saveData(data);
         render();
     };
 
-    // 其他交互函数
+    window.spinWheel = () => {
+        if (wheelAnimation) return;
+        const data = loadData();
+        const wheel = getWheelData();
+        const rand = Math.floor(Math.random() * wheel.weapons.length);
+        const result = wheel.weapons[rand];
+        wheel.results.push(result);
+        saveData(data);
+        document.getElementById('wheelResult').textContent = '';
+        const spinBtn = document.getElementById('spinBtn');
+        if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = '旋转中...'; }
+        startSpinAnimation(result);
+    };
+
+    window.copyAccountId = (id) => { navigator.clipboard.writeText(id).then(() => alert('账号已复制')); };
     window.toggleCategory = (c) => { categoryCollapsed[c]=!categoryCollapsed[c]; render(); };
     window.expandAll = () => { WEAPON_CATEGORIES.forEach(c=>categoryCollapsed[c.cat]=false); render(); };
     window.collapseAll = () => { WEAPON_CATEGORIES.forEach(c=>categoryCollapsed[c.cat]=true); render(); };
@@ -565,13 +551,6 @@
 
     theme = localStorage.getItem('delta_theme')||'light';
     if(theme==='dark') document.documentElement.classList.add('dark-mode');
-    const params=new URLSearchParams(window.location.search);
-    const shareWeapon=params.get('weapon'), shareIdx=parseInt(params.get('idx'));
-    if(shareWeapon&&!isNaN(shareIdx)){
-        viewingUserId=Object.keys(loadData().accounts).find(id=>loadData().accounts[id].codes[shareWeapon]?.[shareIdx])||'share_view';
-        currentUserId=null;
-        searchFilter='';
-    }
     render();
 })();
 </script>
